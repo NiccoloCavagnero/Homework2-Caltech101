@@ -6,13 +6,13 @@ import os
 import os.path
 import sys
 
+import numpy as np
 
 def pil_loader(path):
     # open path as file to avoid ResourceWarning (https://github.com/python-pillow/Pillow/issues/835)
     with open(path, 'rb') as f:
         img = Image.open(f)
         return img.convert('RGB')
-
 
 class Caltech(VisionDataset):
     def __init__(self, root, split='train', transform=None, target_transform=None):
@@ -29,6 +29,22 @@ class Caltech(VisionDataset):
           through the index
         - Labels should start from 0, so for Caltech you will have lables 0...100 (excluding the background class) 
         '''
+        self.dataset = {}
+        self.counter = 0
+        classes_dict = {}
+        class_counter = 0
+        indexes = set(np.loadtxt('Caltech101/'+split+'.txt',dtype=str))
+        classes = os.listdir(root)
+        classes.remove('BACKGROUND_Google')
+        
+        for class_ in classes:
+            classes_dict[class_] = class_counter
+            class_counter += 1
+            images = os.listdir(root+'/'+class_)
+            for image in images:
+                if class_+'/'+image in indexes:
+                    self.dataset[self.counter] = (pil_loader(root+'/'+class_+'/'+image),classes_dict[class_])
+                    self.counter += 1
 
     def __getitem__(self, index):
         '''
@@ -40,9 +56,7 @@ class Caltech(VisionDataset):
             tuple: (sample, target) where target is class_index of the target class.
         '''
 
-        image, label = ... # Provide a way to access image and label via index
-                           # Image should be a PIL Image
-                           # label can be int
+        image, label = self.dataset[index]
 
         # Applies preprocessing when accessing the image
         if self.transform is not None:
@@ -55,5 +69,4 @@ class Caltech(VisionDataset):
         The __len__ method returns the length of the dataset
         It is mandatory, as this is used by several other components
         '''
-        length = ... # Provide a way to get the length (number of elements) of the dataset
-        return length
+        return len(self.dataset.keys())
