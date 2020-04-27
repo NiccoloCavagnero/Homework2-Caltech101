@@ -7,7 +7,7 @@ import os.path
 import sys
 
 import numpy as np
-import random
+from sklearn.model_selection import StratifiedShuffleSplit
 
 def pil_loader(path):
     # open path as file to avoid ResourceWarning (https://github.com/python-pillow/Pillow/issues/835)
