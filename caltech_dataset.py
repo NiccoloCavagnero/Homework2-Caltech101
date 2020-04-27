@@ -7,6 +7,7 @@ import os.path
 import sys
 
 import numpy as np
+import random
 
 def pil_loader(path):
     # open path as file to avoid ResourceWarning (https://github.com/python-pillow/Pillow/issues/835)
@@ -33,11 +34,12 @@ class Caltech(VisionDataset):
         self.counter = 0
         classes_dict = {}
         class_counter = 0
-        indexes = set(np.loadtxt('Caltech101/'+split+'.txt',dtype=str))
-        classes = os.listdir(root)
-        classes.remove('BACKGROUND_Google')
+        indexes = set(np.loadtxt('/Users/neikos/Desktop/DataScience/Python/MLDL/homework2/Homework2-Caltech101/'+split+'.txt',dtype=str))
+        #indexes = set(np.loadtxt('Caltech101/'+split+'.txt',dtype=str))
+        self.classes = os.listdir(root)
+        self.classes.remove('BACKGROUND_Google')
         
-        for class_ in classes:
+        for class_ in self.classes:
             classes_dict[class_] = class_counter
             class_counter += 1
             images = os.listdir(root+'/'+class_)
@@ -69,4 +71,20 @@ class Caltech(VisionDataset):
         The __len__ method returns the length of the dataset
         It is mandatory, as this is used by several other components
         '''
-        return len(self.dataset.keys())
+        return self.counter
+
+    def __getsplit__(self, train_size = 0.5):
+
+        train_indexes, val_indexes = [], []
+
+        for class_ in self.classes:
+            index_list = []
+            for image in self.dataset:
+                if self.dataset[image][1] == class_:
+                    index_list.append(image)
+            split = int(len(index_list)*train_size)
+            random.shuffle(index_list)
+            train_indexes += index_list[:split]
+            val_indexes += index_list[split:]
+
+        return train_indexes, val_indexes
