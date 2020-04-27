@@ -34,8 +34,7 @@ class Caltech(VisionDataset):
         self.counter = 0
         classes_dict = {}
         class_counter = 0
-        indexes = set(np.loadtxt('/Users/neikos/Desktop/DataScience/Python/MLDL/homework2/Homework2-Caltech101/'+split+'.txt',dtype=str))
-        #indexes = set(np.loadtxt('Caltech101/'+split+'.txt',dtype=str))
+        indexes = set(np.loadtxt('Caltech101/'+split+'.txt',dtype=str))
         self.classes = os.listdir(root)
         self.classes.remove('BACKGROUND_Google')
         
@@ -74,17 +73,15 @@ class Caltech(VisionDataset):
         return self.counter
 
     def __getsplit__(self, train_size = 0.5):
+        images, labels = [], []
+        sss = StratifiedShuffleSplit(1,train_size=train_size)
 
-        train_indexes, val_indexes = [], []
+        for item in self.dataset.values():
+            images.append(item[0])
+            labels.append(item[1])
 
-        for class_ in self.classes:
-            index_list = []
-            for image in self.dataset:
-                if self.dataset[image][1] == class_:
-                    index_list.append(image)
-            split = int(len(index_list)*train_size)
-            random.shuffle(index_list)
-            train_indexes += index_list[:split]
-            val_indexes += index_list[split:]
+        for x, y in sss.split(images,labels):
+            train_indexes = x
+            val_indexes = y 
 
         return train_indexes, val_indexes
